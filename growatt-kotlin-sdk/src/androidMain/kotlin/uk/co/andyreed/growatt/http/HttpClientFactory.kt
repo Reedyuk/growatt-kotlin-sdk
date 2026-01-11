@@ -4,6 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.plugins.defaultRequest
@@ -19,6 +20,7 @@ actual fun createHttpClient(debug: Boolean): HttpClient = HttpClient(OkHttp) {
         logger = Logger.SIMPLE
         level = if (debug) LogLevel.ALL else LogLevel.INFO
     }
+    install(HttpCookies)
     install(HttpTimeout) {
         requestTimeoutMillis = 60_000
         connectTimeoutMillis = 15_000

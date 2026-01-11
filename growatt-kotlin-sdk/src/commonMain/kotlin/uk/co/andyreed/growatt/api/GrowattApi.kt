@@ -1,16 +1,19 @@
 package uk.co.andyreed.growatt.api
 
 import io.ktor.client.*
-import io.ktor.client.call.body
+import io.ktor.client.plugins.cookies.cookies
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.FormDataContent
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
+import kotlinx.serialization.json.Json
 
 interface GrowattApi {
     /** Mutable token that callers can set or that implementations may populate after login. */
-    var token: String?
-
-    /** Convenience: use the client's stored token. Throws if token is not set. */
-    suspend fun getDevices(): List<Device>
+    var isAuthenticated: Boolean
+    suspend fun login(username: String, password: String): AuthResponse
+    suspend fun getPlantList(): List<Plant>
 }
 
 class GrowattApiImpl(
@@ -18,10 +21,41 @@ class GrowattApiImpl(
     private val baseUrl: String
 ) : GrowattApi {
 
-    override var token: String? = null
+    override var isAuthenticated: Boolean = false
 
-    override suspend fun getDevices(): List<Device> =
-        client.get("$baseUrl/devices") {
-            header(HttpHeaders.Authorization, "Bearer $token")
-        }.body()
+    override suspend fun login(username: String, password: String): AuthResponse {
+        val response: HttpResponse = client.post("$baseUrl/login") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(
+                FormDataContent(
+                    Parameters.build {
+                        append("account", username)
+                        append("password", password)
+                        append("validateCode", "")
+                    }
+                )
+            )
+            header(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded.toString())
+            header(HttpHeaders.Accept, "*/*")
+        }
+
+        val bodyText = response.bodyAsText()
+        isAuthenticated = bodyText == "{\"result\":1}"
+        println("Andrew --> ${client.cookies(baseUrl)}")
+
+        return AuthResponse(bodyText, isAuthenticated)
+    }
+
+//    https://server.growatt.com/index/getPlantListTitle
+    override suspend fun getPlantList(): List<Plant> {
+        val response = client.get("$baseUrl/index/getPlantListTitle") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            header(HttpHeaders.Accept, "*/*")
+        }
+        val bodyAsText = response.bodyAsText()
+        println("Plant List Body: $bodyAsText")
+        val plants: List<Plant> = Json.decodeFromString(bodyAsText)
+        return plants
+    }
+
 }
