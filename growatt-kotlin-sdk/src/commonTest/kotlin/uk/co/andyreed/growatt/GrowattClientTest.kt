@@ -9,30 +9,9 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import io.ktor.http.*
-import uk.co.andyreed.growatt.api.GrowattClient
+import uk.co.andyreed.growatt.api.GrowattApiImpl
 
 class GrowattClientTest {
-    @Test
-    fun login_success_returnsAuthResponse() = runBlocking {
-        val mockEngine = MockEngine { request ->
-            when (request.url.encodedPath) {
-                "/login" -> respond(
-                    content = "{\"token\":\"abc123\", \"expiresIn\":3600}",
-                    status = HttpStatusCode.OK,
-                    headers = headersOf(HttpHeaders.ContentType, "application/json")
-                )
-                else -> respondBadRequest()
-            }
-        }
-
-        val client = HttpClient(mockEngine) {
-            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
-        }
-
-        val api = GrowattClient(client, baseUrl = "https://server.growatt.com")
-        val resp = api.login("u", "p")
-        assertEquals("abc123", resp.token)
-    }
 
     @Test
     fun getDevices_returnsList() = runBlocking {
@@ -52,8 +31,8 @@ class GrowattClientTest {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
         }
 
-        val api = GrowattClient(client, baseUrl = "https://server.growatt.com")
-        val list = api.getDevices("token")
+        val api = GrowattApiImpl(client, baseUrl = "https://server.growatt.com")
+        val list = api.getDevices()
         assertEquals(1, list.size)
         assertEquals("d1", list[0].id)
     }
