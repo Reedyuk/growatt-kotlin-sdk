@@ -7,10 +7,11 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish)
     // Add Kotlinx Serialization plugin for multiplatform
     alias(libs.plugins.kotlinx.serialization)
+    signing
 }
 
 group = "uk.co.andyreed"
-version = "1.0.0"
+version = "0.0.1"
 
 kotlin {
     jvm()
@@ -71,31 +72,44 @@ mavenPublishing {
 
     signAllPublications()
 
-    coordinates(group.toString(), "library", version.toString())
+    coordinates(group.toString(), "growatt-kotlin-sdk", version.toString())
 
     pom {
         name = "Growatt Kotlin SDK"
         description = "A Kotlin SDK for interacting with Growatt solar inverters and energy storage systems."
         inceptionYear = "2026"
         url = "https://github.com/reedyuk/growatt-kotlin-sdk/"
-        licenses {
-            license {
-                name = "XXX"
-                url = "YYY"
-                distribution = "ZZZ"
-            }
-        }
         developers {
             developer {
-                id = "XXX"
-                name = "YYY"
-                url = "ZZZ"
+                name.set("Andrew Reed")
+                email.set("andrew_reed@hotmail.com")
+            }
+        }
+
+        licenses {
+            license {
+                name.set("The Apache Software License, Version 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("repo")
+                comments.set("A business-friendly OSS license")
             }
         }
         scm {
-            url = "XXX"
-            connection = "YYY"
-            developerConnection = "ZZZ"
+            url.set("https://github.com/reedyuk/growatt-kotlin-sdk")
+            connection.set("scm:git:https://github.com/reedyuk/growatt-kotlin-sdk.git")
+            developerConnection.set("scm:git:https://github.com/reedyuk/growatt-kotlin-sdk.git")
+            tag.set("HEAD")
         }
+
+        issueManagement {
+            system.set("GitHub Issues")
+            url.set("https://github.com/reedyuk/growatt-kotlin-sdk/issues")
+        }
+    }
+}
+
+signing {
+    setRequired {
+        !gradle.taskGraph.allTasks.any { it is PublishToMavenLocal }
     }
 }
