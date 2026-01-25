@@ -18,7 +18,7 @@ interface GrowattApi {
 
 class GrowattApiImpl(
     private val client: HttpClient,
-    private val baseUrl: String
+    private val baseUrl: String = "https://server.growatt.com"
 ) : GrowattApi {
 
     override var isAuthenticated: Boolean = false
@@ -32,6 +32,7 @@ class GrowattApiImpl(
                         append("account", username)
                         append("password", password)
                         append("validateCode", "")
+                        append("isRemember", "0")
                     }
                 )
             )
@@ -41,8 +42,6 @@ class GrowattApiImpl(
 
         val bodyText = response.bodyAsText()
         isAuthenticated = bodyText == "{\"result\":1}"
-        println("Andrew --> ${client.cookies(baseUrl)}")
-
         return AuthResponse(bodyText, isAuthenticated)
     }
 

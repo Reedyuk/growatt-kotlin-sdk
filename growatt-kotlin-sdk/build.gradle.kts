@@ -16,7 +16,7 @@ version = "0.0.1"
 kotlin {
     jvm()
     androidLibrary {
-        namespace = "uk.co.andyreed.growatt-kotlin-sdk"
+        namespace = "uk.co.andyreed"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
