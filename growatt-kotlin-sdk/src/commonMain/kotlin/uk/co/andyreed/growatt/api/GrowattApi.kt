@@ -1,7 +1,6 @@
 package uk.co.andyreed.growatt.api
 
 import io.ktor.client.*
-import io.ktor.client.plugins.cookies.cookies
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.statement.HttpResponse
@@ -14,6 +13,8 @@ interface GrowattApi {
     var isAuthenticated: Boolean
     suspend fun login(username: String, password: String): AuthResponse
     suspend fun getPlantList(): List<Plant>
+    suspend fun getDevices(plantId: String, pageNumber: Int): GetDevicesForPlantResponse
+    suspend fun getWeather(plantId: String): WeatherResponse
 }
 
 class GrowattApiImpl(
@@ -55,6 +56,32 @@ class GrowattApiImpl(
         println("Plant List Body: $bodyAsText")
         val plants: List<Plant> = Json.decodeFromString(bodyAsText)
         return plants
+    }
+
+    override suspend fun getDevices(plantId: String, pageNumber: Int): GetDevicesForPlantResponse {
+        val response = client.get("$baseUrl/panel/getDevicesByPlantList") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(
+                FormDataContent(
+                    Parameters.build {
+                        append("plantId", plantId)
+                        append("currPage", "$pageNumber")
+                    }
+                )
+            )
+            contentType(ContentType.Application.FormUrlEncoded)
+            header(HttpHeaders.Accept, "*/*")
+        }
+        val bodyAsText = response.bodyAsText()
+        println("getDevicesByPlantList Body: $bodyAsText")
+        return Json.decodeFromString<GetDevicesForPlantResponse>(bodyAsText)
+    }
+
+    override suspend fun getWeather(plantId: String): WeatherResponse {
+        val response = client.get("$baseUrl/index/getWeatherByPlantId?plantId=$plantId")
+        val bodyAsText = response.bodyAsText()
+        println("getWeather Body: $bodyAsText")
+        return Json.decodeFromString<WeatherResponse>(bodyAsText)
     }
 
 }
