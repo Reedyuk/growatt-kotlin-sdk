@@ -15,7 +15,5 @@ jobs:
         distribution: 'temurin'
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
-    - name: Run gradle build
+    - name: Run gradle build and test
       run: ./gradlew build
-    - name: Run tests
-      run: ./gradlew test
