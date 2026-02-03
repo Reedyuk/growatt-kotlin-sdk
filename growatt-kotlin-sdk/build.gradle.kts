@@ -1,9 +1,7 @@
-import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.vanniktech.mavenPublish)
     // Add Kotlinx Serialization plugin for multiplatform
     alias(libs.plugins.kotlinx.serialization)
@@ -15,25 +13,6 @@ version = "0.0.1"
 
 kotlin {
     jvm()
-    androidLibrary {
-        namespace = "uk.co.andyreed"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        withJava() // enable java compilation support
-        withHostTestBuilder {}.configure {}
-        withDeviceTestBuilder {
-            sourceSetTreeName = "test"
-        }
-
-        compilations.configureEach {
-            compilerOptions.configure {
-                jvmTarget.set(
-                    JvmTarget.JVM_11
-                )
-            }
-        }
-    }
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -53,10 +32,6 @@ kotlin {
         }
 
         // Platform-specific engines
-        androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
-        }
-
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
         }
