@@ -17,14 +17,38 @@ class GrowattClientTest {
 
     @Test
     fun login_setsToken_and_getDevices_usesIt() = runBlocking {
-        val client = createHttpClient()
+        val plantsJson = "[{\"timezone\":\"0\",\"id\":\"p1\",\"plantName\":\"Plant 1\"}]"
+
+        val mockEngine = MockEngine { request ->
+            when (request.url.encodedPath) {
+                "/login" -> respond(
+                    content = "{\"result\":1}",
+                    status = HttpStatusCode.OK
+                )
+                "/index/getPlantListTitle" -> {
+                    respond(
+                        content = plantsJson,
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "text/html;charset=UTF-8\n")
+                    )
+                }
+                else -> respondBadRequest()
+            }
+        }
+
+        val client = HttpClient(mockEngine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+        }
+
         val api = GrowattApiImpl(client, baseUrl = "https://server.growatt.com")
         val auth = api.login("reedyuk", "password")
         assertEquals("{\"result\":1}", auth.rawBody)
         assertTrue(api.isAuthenticated)
 
         val plants = api.getPlantList()
-        println("Plants: $plants")
+        assertEquals(1, plants.size)
     }
 
     @Test
