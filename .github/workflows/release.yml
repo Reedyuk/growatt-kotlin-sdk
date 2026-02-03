@@ -13,6 +13,8 @@ env:
 jobs:
   build:
     runs-on: macos-latest
+    permissions:
+      contents: read
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-java@v4
@@ -24,4 +26,4 @@ jobs:
     - name: Run gradle build
       run: ./gradlew build
     - name: Run publish
-      run: ./gradlew publish
+      run: ./gradlew publishAllPublicationsToMavenCentralRepository
