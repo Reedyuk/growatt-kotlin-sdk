@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -6,6 +7,12 @@ plugins {
     // Add Kotlinx Serialization plugin for multiplatform
     alias(libs.plugins.kotlinx.serialization)
     signing
+}
+
+val local = Properties()
+val localProperties: File = rootProject.file("local.properties")
+if (localProperties.exists()) {
+    localProperties.inputStream().use { local.load(it) }
 }
 
 group = "uk.co.andyreed"
@@ -86,5 +93,14 @@ mavenPublishing {
 signing {
     setRequired {
         !gradle.taskGraph.allTasks.any { it is PublishToMavenLocal }
+    }
+    val key = local.getProperty("signingKey") ?: System.getenv("SIGNING_KEY")
+    val password = local.getProperty("signingPassword") ?: System.getenv("SIGNING_PASSWORD")
+    if (key != null && password != null) {
+        useInMemoryPgpKeys(key, password)
+        sign(publishing.publications) // This ensures all created publications are signed
+    } else {
+        // Optional: Log a warning if keys are missing for a release build
+        logger.warn("Signing key or password not found. Publication will not be signed.")
     }
 }
