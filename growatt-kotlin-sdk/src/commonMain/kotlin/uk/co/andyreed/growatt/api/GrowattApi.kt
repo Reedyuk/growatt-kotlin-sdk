@@ -78,7 +78,10 @@ class GrowattApiImpl(
     }
 
     override suspend fun getWeather(plantId: String): WeatherResponse {
-        val response = client.get("$baseUrl/index/getWeatherByPlantId?plantId=$plantId")
+        val response = client.get("$baseUrl/index/getWeatherByPlantId?plantId=$plantId") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            header(HttpHeaders.Accept, "*/*")
+        }
         val bodyAsText = response.bodyAsText()
         println("getWeather Body: $bodyAsText")
         return Json.decodeFromString<WeatherResponse>(bodyAsText)
