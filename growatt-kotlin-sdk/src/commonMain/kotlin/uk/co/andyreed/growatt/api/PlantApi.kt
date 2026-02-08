@@ -9,8 +9,6 @@ import kotlinx.serialization.json.Json
 
 interface PlantApi {
     suspend fun getPlantDetail(plantId: String): PlantDetail
-    suspend fun getPlantEnergyToday(plantId: String): EnergySummary
-    suspend fun getPlantEnergyHistory(plantId: String, range: DateRange): List<EnergyData>
     suspend fun getPlantDevices(plantId: String): List<Device>
 }
 
@@ -37,48 +35,6 @@ class PlantApiImpl(
         println("getPlantDetail Body: $bodyAsText")
         val plantDetailResponse = json.decodeFromString<PlantDetailResponse>(bodyAsText)
         return plantDetailResponse.obj ?: throw ApiException(plantDetailResponse.result, "Failed to get plant detail")
-    }
-
-    override suspend fun getPlantEnergyToday(plantId: String): EnergySummary {
-        val response = client.post("$baseUrl/panel/getPlantData") {
-            contentType(ContentType.Application.FormUrlEncoded)
-            setBody(
-                FormDataContent(
-                    Parameters.build {
-                        append("plantId", plantId)
-                    }
-                )
-            )
-            header(HttpHeaders.Accept, "*/*")
-        }
-        val bodyAsText = response.bodyAsText()
-        println("getPlantEnergyToday Body: $bodyAsText")
-        val plantDetailResponse = json.decodeFromString<PlantDetailResponse>(bodyAsText)
-        val plantDetail = plantDetailResponse.obj ?: throw ApiException(plantDetailResponse.result, "Failed to get plant detail")
-        // Note: The API doesn't return todayEnergy in this endpoint, using eTotal as total energy
-        return EnergySummary(
-            todayEnergy = 0.0, // This endpoint doesn't provide todayEnergy
-            todayIncome = 0.0  // This endpoint doesn't provide todayIncome
-        )
-    }
-
-    override suspend fun getPlantEnergyHistory(plantId: String, range: DateRange): List<EnergyData> {
-        val response = client.post("$baseUrl/panel/getPlantEnergyData") {
-            contentType(ContentType.Application.FormUrlEncoded)
-            setBody(
-                FormDataContent(
-                    Parameters.build {
-                        append("plantId", plantId)
-                        append("startDate", range.startDate)
-                        append("endDate", range.endDate)
-                    }
-                )
-            )
-            header(HttpHeaders.Accept, "*/*")
-        }
-        val bodyAsText = response.bodyAsText()
-        println("getPlantEnergyHistory Body: $bodyAsText")
-        return json.decodeFromString<List<EnergyData>>(bodyAsText)
     }
 
     override suspend fun getPlantDevices(plantId: String): List<Device> {
