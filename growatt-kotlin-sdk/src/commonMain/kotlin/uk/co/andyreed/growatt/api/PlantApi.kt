@@ -22,7 +22,7 @@ class PlantApiImpl(
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun getPlantDetail(plantId: String): PlantDetail {
-        val response = client.get("$baseUrl/panel/getPlantData") {
+        val response = client.post("$baseUrl/panel/getPlantData") {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody(
                 FormDataContent(
@@ -39,7 +39,7 @@ class PlantApiImpl(
     }
 
     override suspend fun getPlantEnergyToday(plantId: String): EnergySummary {
-        val response = client.get("$baseUrl/panel/getPlantData") {
+        val response = client.post("$baseUrl/panel/getPlantData") {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody(
                 FormDataContent(
@@ -60,7 +60,7 @@ class PlantApiImpl(
     }
 
     override suspend fun getPlantEnergyHistory(plantId: String, range: DateRange): List<EnergyData> {
-        val response = client.get("$baseUrl/panel/getPlantEnergyData") {
+        val response = client.post("$baseUrl/panel/getPlantEnergyData") {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody(
                 FormDataContent(
@@ -79,7 +79,7 @@ class PlantApiImpl(
     }
 
     override suspend fun getPlantDevices(plantId: String): List<Device> {
-        val response = client.get("$baseUrl/panel/getDevicesByPlantList") {
+        val response = client.post("$baseUrl/panel/getDevicesByPlantList") {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody(
                 FormDataContent(

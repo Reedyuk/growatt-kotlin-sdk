@@ -16,7 +16,7 @@ if (localProperties.exists()) {
 }
 
 group = "uk.co.andyreed"
-version = "0.0.2"
+version = "0.0.3"
 
 kotlin {
     jvm()
