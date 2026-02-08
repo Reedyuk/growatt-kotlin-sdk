@@ -55,11 +55,6 @@ data class EnergySummary(
     val todayIncome: Double
 )
 
-@Serializable
-data class DateRange(
-    val startDate: String,
-    val endDate: String
-)
 
 @Serializable
 data class EnergyData(

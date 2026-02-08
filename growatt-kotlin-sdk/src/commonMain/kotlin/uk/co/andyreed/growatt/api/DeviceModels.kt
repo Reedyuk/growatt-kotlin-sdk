@@ -2,14 +2,6 @@ package uk.co.andyreed.growatt.api
 
 import kotlinx.serialization.Serializable
 
-/**
- * Date range for querying device history
- */
-@Serializable
-data class DateRange(
-    val startDate: String, // ISO 8601 format: YYYY-MM-DD
-    val endDate: String    // ISO 8601 format: YYYY-MM-DD
-)
 
 /**
  * Detailed information about a device
