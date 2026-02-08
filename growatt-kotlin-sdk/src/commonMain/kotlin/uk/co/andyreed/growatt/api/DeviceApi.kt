@@ -55,24 +55,24 @@ class DeviceApiImpl(
     private val baseUrl: String = "https://server.growatt.com"
 ) : DeviceApi {
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     override suspend fun getDetail(deviceId: String): DeviceDetail {
         val response = client.get("$baseUrl/panel/getDeviceDetail") {
             parameter("deviceSn", deviceId)
-            contentType(ContentType.Application.FormUrlEncoded)
             header(HttpHeaders.Accept, "*/*")
         }
         val bodyAsText = response.bodyAsText()
-        return Json.decodeFromString<DeviceDetail>(bodyAsText)
+        return json.decodeFromString<DeviceDetail>(bodyAsText)
     }
 
     override suspend fun getRealtime(deviceId: String): RealtimeData {
         val response = client.get("$baseUrl/panel/getDeviceRealtime") {
             parameter("deviceSn", deviceId)
-            contentType(ContentType.Application.FormUrlEncoded)
             header(HttpHeaders.Accept, "*/*")
         }
         val bodyAsText = response.bodyAsText()
-        return Json.decodeFromString<RealtimeData>(bodyAsText)
+        return json.decodeFromString<RealtimeData>(bodyAsText)
     }
 
     override suspend fun getHistory(deviceId: String, range: DateRange): List<HistoryEntry> {
@@ -80,30 +80,27 @@ class DeviceApiImpl(
             parameter("deviceSn", deviceId)
             parameter("startDate", range.startDate)
             parameter("endDate", range.endDate)
-            contentType(ContentType.Application.FormUrlEncoded)
             header(HttpHeaders.Accept, "*/*")
         }
         val bodyAsText = response.bodyAsText()
-        return Json.decodeFromString<List<HistoryEntry>>(bodyAsText)
+        return json.decodeFromString<List<HistoryEntry>>(bodyAsText)
     }
 
     override suspend fun getStatus(deviceId: String): DeviceStatus {
         val response = client.get("$baseUrl/panel/getDeviceStatus") {
             parameter("deviceSn", deviceId)
-            contentType(ContentType.Application.FormUrlEncoded)
             header(HttpHeaders.Accept, "*/*")
         }
         val bodyAsText = response.bodyAsText()
-        return Json.decodeFromString<DeviceStatus>(bodyAsText)
+        return json.decodeFromString<DeviceStatus>(bodyAsText)
     }
 
     override suspend fun getAlarms(deviceId: String): List<Alarm> {
         val response = client.get("$baseUrl/panel/getDeviceAlarms") {
             parameter("deviceSn", deviceId)
-            contentType(ContentType.Application.FormUrlEncoded)
             header(HttpHeaders.Accept, "*/*")
         }
         val bodyAsText = response.bodyAsText()
-        return Json.decodeFromString<List<Alarm>>(bodyAsText)
+        return json.decodeFromString<List<Alarm>>(bodyAsText)
     }
 }
