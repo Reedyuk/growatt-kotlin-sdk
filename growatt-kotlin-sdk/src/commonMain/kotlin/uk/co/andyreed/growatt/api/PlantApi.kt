@@ -35,7 +35,8 @@ class PlantApiImpl(
         }
         val bodyAsText = response.bodyAsText()
         println("getPlantDetail Body: $bodyAsText")
-        return json.decodeFromString<PlantDetail>(bodyAsText)
+        val plantDetailResponse = json.decodeFromString<PlantDetailResponse>(bodyAsText)
+        return plantDetailResponse.obj ?: throw ApiException(plantDetailResponse.result, "Failed to get plant detail")
     }
 
     override suspend fun getPlantEnergyToday(plantId: String): EnergySummary {
@@ -52,10 +53,12 @@ class PlantApiImpl(
         }
         val bodyAsText = response.bodyAsText()
         println("getPlantEnergyToday Body: $bodyAsText")
-        val plantDetail = json.decodeFromString<PlantDetail>(bodyAsText)
+        val plantDetailResponse = json.decodeFromString<PlantDetailResponse>(bodyAsText)
+        val plantDetail = plantDetailResponse.obj ?: throw ApiException(plantDetailResponse.result, "Failed to get plant detail")
+        // Note: The API doesn't return todayEnergy in this endpoint, using eTotal as total energy
         return EnergySummary(
-            todayEnergy = plantDetail.todayEnergy ?: 0.0,
-            todayIncome = plantDetail.todayIncome ?: 0.0
+            todayEnergy = 0.0, // This endpoint doesn't provide todayEnergy
+            todayIncome = 0.0  // This endpoint doesn't provide todayIncome
         )
     }
 

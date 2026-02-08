@@ -19,17 +19,32 @@ class PlantApiTest {
     fun getPlantDetail_returnsPlantDetail() = runBlocking {
         val plantDetailJson = """
             {
-                "plantId": "123",
-                "plantName": "Test Plant",
-                "currentPower": 5.5,
-                "todayEnergy": 25.3,
-                "totalEnergy": 1500.0,
-                "todayIncome": 3.5,
-                "totalIncome": 200.0,
-                "status": "1",
-                "timezone": 0,
-                "city": "London",
-                "country": "UK"
+                "result": 1,
+                "obj": {
+                    "id": "10672078",
+                    "plantName": "Derby",
+                    "country": "UnitedKingdom",
+                    "city": "Derby",
+                    "timezone": "0",
+                    "lat": "52.872",
+                    "lng": "-1.441",
+                    "accountName": "Reedyuk",
+                    "nominalPower": "1000",
+                    "eTotal": "2.5",
+                    "moneyUnit": "GBP",
+                    "moneyUnitText": "£",
+                    "co2": "2.5",
+                    "coal": "1",
+                    "tree": "1",
+                    "fixedPowerPrice": "1.2",
+                    "valleyPeriodPrice": "1.0",
+                    "peakPeriodPrice": "1.3",
+                    "flatPeriodPrice": "1.1",
+                    "creatDate": "2026-01-11",
+                    "plantType": "0",
+                    "isShare": "false",
+                    "tempType": "0"
+                }
             }
         """.trimIndent()
 
@@ -53,21 +68,23 @@ class PlantApiTest {
         val api = PlantApiImpl(client, baseUrl = "https://server.growatt.com")
         val plantDetail = api.getPlantDetail("123")
         
-        assertEquals("123", plantDetail.plantId)
-        assertEquals("Test Plant", plantDetail.plantName)
-        assertEquals(5.5, plantDetail.currentPower)
-        assertEquals(25.3, plantDetail.todayEnergy)
-        assertEquals(1500.0, plantDetail.totalEnergy)
+        assertEquals("10672078", plantDetail.id)
+        assertEquals("Derby", plantDetail.plantName)
+        assertEquals("UnitedKingdom", plantDetail.country)
+        assertEquals("Derby", plantDetail.city)
+        assertEquals("2.5", plantDetail.eTotal)
     }
 
     @Test
     fun getPlantEnergyToday_returnsEnergySummary() = runBlocking {
         val plantDetailJson = """
             {
-                "plantId": "123",
-                "plantName": "Test Plant",
-                "todayEnergy": 25.3,
-                "todayIncome": 3.5
+                "result": 1,
+                "obj": {
+                    "id": "10672078",
+                    "plantName": "Derby",
+                    "eTotal": "2.5"
+                }
             }
         """.trimIndent()
 
@@ -91,8 +108,9 @@ class PlantApiTest {
         val api = PlantApiImpl(client, baseUrl = "https://server.growatt.com")
         val energySummary = api.getPlantEnergyToday("123")
         
-        assertEquals(25.3, energySummary.todayEnergy)
-        assertEquals(3.5, energySummary.todayIncome)
+        // Note: The getPlantData endpoint doesn't provide todayEnergy/todayIncome
+        assertEquals(0.0, energySummary.todayEnergy)
+        assertEquals(0.0, energySummary.todayIncome)
     }
 
     @Test
