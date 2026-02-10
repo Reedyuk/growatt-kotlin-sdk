@@ -45,6 +45,20 @@ interface DeviceApi {
      * @return List of Alarm records
      */
     suspend fun getAlarms(deviceId: String): List<Alarm>
+    
+    /**
+     * Get the current battery state of a device
+     * @param deviceId The unique identifier of the device
+     * @return BatteryState containing current battery state information
+     */
+    suspend fun getBatteryState(deviceId: String): BatteryState
+    
+    /**
+     * Get battery metrics for a device
+     * @param deviceId The unique identifier of the device
+     * @return BatteryMetrics containing battery performance metrics
+     */
+    suspend fun getBatteryMetrics(deviceId: String): BatteryMetrics
 }
 
 /**
@@ -102,5 +116,23 @@ class DeviceApiImpl(
         }
         val bodyAsText = response.bodyAsText()
         return json.decodeFromString<List<Alarm>>(bodyAsText)
+    }
+
+    override suspend fun getBatteryState(deviceId: String): BatteryState {
+        val response = client.get("$baseUrl/panel/getBatteryState") {
+            parameter("deviceSn", deviceId)
+            header(HttpHeaders.Accept, "*/*")
+        }
+        val bodyAsText = response.bodyAsText()
+        return json.decodeFromString<BatteryState>(bodyAsText)
+    }
+
+    override suspend fun getBatteryMetrics(deviceId: String): BatteryMetrics {
+        val response = client.get("$baseUrl/panel/getBatteryMetrics") {
+            parameter("deviceSn", deviceId)
+            header(HttpHeaders.Accept, "*/*")
+        }
+        val bodyAsText = response.bodyAsText()
+        return json.decodeFromString<BatteryMetrics>(bodyAsText)
     }
 }

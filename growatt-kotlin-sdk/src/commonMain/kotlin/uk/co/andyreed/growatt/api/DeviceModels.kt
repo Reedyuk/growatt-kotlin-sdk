@@ -69,3 +69,35 @@ data class Alarm(
     val timestamp: String,
     val isResolved: Boolean = false
 )
+
+/**
+ * Battery state information
+ */
+@Serializable
+data class BatteryState(
+    val deviceId: String,
+    val soc: String,              // State of charge (%)
+    val voltage: String,          // Battery voltage (V)
+    val current: String,          // Battery current (A)
+    val power: String,            // Battery power (W)
+    val temperature: String,      // Battery temperature (°C)
+    val status: String,           // Battery status (charging/discharging/idle)
+    val lastUpdateTime: String
+)
+
+/**
+ * Battery metrics information
+ */
+@Serializable
+data class BatteryMetrics(
+    val deviceId: String,
+    val capacity: String,         // Total battery capacity (kWh)
+    val remainingCapacity: String, // Remaining capacity (kWh)
+    val chargedToday: String,     // Energy charged today (kWh)
+    val dischargedToday: String,  // Energy discharged today (kWh)
+    val chargedTotal: String,     // Total energy charged (kWh)
+    val dischargedTotal: String,  // Total energy discharged (kWh)
+    val cycleCount: String,       // Battery cycle count
+    val health: String,           // Battery health (%)
+    val lastUpdateTime: String
+)

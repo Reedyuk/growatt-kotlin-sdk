@@ -235,4 +235,100 @@ class DeviceApiTest {
         assertEquals(false, alarms[0].isResolved)
         assertEquals(true, alarms[1].isResolved)
     }
+
+    @Test
+    fun getBatteryState_returnsBatteryState() = runBlocking {
+        val batteryStateJson = """
+            {
+                "deviceId": "device1",
+                "soc": "75.5",
+                "voltage": "52.4",
+                "current": "10.2",
+                "power": "534",
+                "temperature": "25.3",
+                "status": "charging",
+                "lastUpdateTime": "2026-02-08 12:00:00"
+            }
+        """.trimIndent()
+
+        val mockEngine = MockEngine { request ->
+            when {
+                request.url.encodedPath.contains("/panel/getBatteryState") -> {
+                    respond(
+                        content = batteryStateJson,
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json")
+                    )
+                }
+                else -> respondBadRequest()
+            }
+        }
+
+        val client = HttpClient(mockEngine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+        }
+
+        val api = DeviceApiImpl(client, baseUrl = "https://server.growatt.com")
+        val batteryState = api.getBatteryState("device1")
+        
+        assertEquals("device1", batteryState.deviceId)
+        assertEquals("75.5", batteryState.soc)
+        assertEquals("52.4", batteryState.voltage)
+        assertEquals("10.2", batteryState.current)
+        assertEquals("534", batteryState.power)
+        assertEquals("25.3", batteryState.temperature)
+        assertEquals("charging", batteryState.status)
+    }
+
+    @Test
+    fun getBatteryMetrics_returnsBatteryMetrics() = runBlocking {
+        val batteryMetricsJson = """
+            {
+                "deviceId": "device1",
+                "capacity": "10.0",
+                "remainingCapacity": "7.5",
+                "chargedToday": "5.2",
+                "dischargedToday": "3.8",
+                "chargedTotal": "2500.5",
+                "dischargedTotal": "2300.2",
+                "cycleCount": "250",
+                "health": "95.5",
+                "lastUpdateTime": "2026-02-08 12:00:00"
+            }
+        """.trimIndent()
+
+        val mockEngine = MockEngine { request ->
+            when {
+                request.url.encodedPath.contains("/panel/getBatteryMetrics") -> {
+                    respond(
+                        content = batteryMetricsJson,
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json")
+                    )
+                }
+                else -> respondBadRequest()
+            }
+        }
+
+        val client = HttpClient(mockEngine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+        }
+
+        val api = DeviceApiImpl(client, baseUrl = "https://server.growatt.com")
+        val batteryMetrics = api.getBatteryMetrics("device1")
+        
+        assertEquals("device1", batteryMetrics.deviceId)
+        assertEquals("10.0", batteryMetrics.capacity)
+        assertEquals("7.5", batteryMetrics.remainingCapacity)
+        assertEquals("5.2", batteryMetrics.chargedToday)
+        assertEquals("3.8", batteryMetrics.dischargedToday)
+        assertEquals("2500.5", batteryMetrics.chargedTotal)
+        assertEquals("2300.2", batteryMetrics.dischargedTotal)
+        assertEquals("250", batteryMetrics.cycleCount)
+        assertEquals("95.5", batteryMetrics.health)
+    }
 }
