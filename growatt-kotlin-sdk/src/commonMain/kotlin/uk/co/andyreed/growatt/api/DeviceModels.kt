@@ -69,3 +69,108 @@ data class Alarm(
     val timestamp: String,
     val isResolved: Boolean = false
 )
+
+/**
+ * Battery state information
+ */
+@Serializable
+data class BatteryState(
+    val deviceId: String,
+    val soc: String,              // State of charge (%)
+    val voltage: String,          // Battery voltage (V)
+    val current: String,          // Battery current (A)
+    val power: String,            // Battery power (W)
+    val temperature: String,      // Battery temperature (°C)
+    val status: String,           // Battery status (charging/discharging/idle)
+    val lastUpdateTime: String
+)
+
+/**
+ * Battery metrics information
+ */
+@Serializable
+data class BatteryMetrics(
+    val deviceId: String,
+    val capacity: String,         // Total battery capacity (kWh)
+    val remainingCapacity: String, // Remaining capacity (kWh)
+    val chargedToday: String,     // Energy charged today (kWh)
+    val dischargedToday: String,  // Energy discharged today (kWh)
+    val chargedTotal: String,     // Total energy charged (kWh)
+    val dischargedTotal: String,  // Total energy discharged (kWh)
+    val cycleCount: String,       // Battery cycle count
+    val health: String,           // Battery health (%)
+    val lastUpdateTime: String
+)
+
+/**
+ * Response wrapper for storage battery chart data
+ */
+@Serializable
+data class StorageBatChartResponse(
+    val result: Int,
+    val obj: StorageBatChartData? = null
+)
+
+/**
+ * Storage battery chart data
+ */
+@Serializable
+data class StorageBatChartData(
+    val date: String,
+    val cdsTitle: List<String>,
+    val socChart: SocChart,
+    val cdsData: CdsData
+)
+
+/**
+ * State of charge chart data
+ */
+@Serializable
+data class SocChart(
+    val capacity: List<Double?>
+)
+
+/**
+ * Charge/discharge data
+ */
+@Serializable
+data class CdsData(
+    val cd_charge: List<Double>,
+    val cd_disCharge: List<Double>
+)
+
+/**
+ * Response wrapper for storage energy day chart data
+ */
+@Serializable
+data class StorageEnergyDayChartResponse(
+    val result: Int,
+    val obj: StorageEnergyDayChartData? = null
+)
+
+/**
+ * Storage energy day chart data
+ */
+@Serializable
+data class StorageEnergyDayChartData(
+    val eChargeTotal: String,
+    val charts: EnergyCharts,
+    val dtc: Int,
+    val eAcDisCharge: String,
+    val eDisCharge: String,
+    val eCharge: String,
+    val eAcCharge: String,
+    val eDisChargeTotal: String
+)
+
+/**
+ * Energy charts containing various power and load data
+ */
+@Serializable
+data class EnergyCharts(
+    val pacToGrid: List<Double?>,
+    val ppv: List<Double?>,
+    val sysOut: List<Double?>,
+    val userLoad: List<Double?>,
+    val pacToUser: List<Double?>
+)

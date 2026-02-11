@@ -14,28 +14,29 @@ import uk.co.andyreed.growatt.api.*
 class DeviceApiTest {
 
     @Test
-    fun getDetail_returnsDeviceDetail() = runBlocking {
-        val deviceDetailJson = """
+    fun getStorageBatChart_returnsStorageBatChartData() = runBlocking {
+        val storageBatChartJson = """
             {
-                "deviceId": "device1",
-                "deviceSn": "SN123456",
-                "deviceType": "inverter",
-                "deviceModel": "MIC 3000TL-X",
-                "plantId": "plant1",
-                "plantName": "My Plant",
-                "nominalPower": "3000",
-                "location": "Home",
-                "timezone": "0",
-                "datalogSn": "DL123456",
-                "alias": "Main Inverter"
+                "result": 1,
+                "obj": {
+                    "date": "2026-02-11",
+                    "cdsTitle": ["2026-02-05", "2026-02-06", "2026-02-07"],
+                    "socChart": {
+                        "capacity": [null, 38.0, 39.0, 40.0, null]
+                    },
+                    "cdsData": {
+                        "cd_charge": [0.0, 0.1, 0.2],
+                        "cd_disCharge": [0.0, 0.0, 0.1]
+                    }
+                }
             }
         """.trimIndent()
 
         val mockEngine = MockEngine { request ->
             when {
-                request.url.encodedPath.contains("/panel/getDeviceDetail") -> {
+                request.url.encodedPath.contains("/panel/storage/getStorageBatChart") -> {
                     respond(
-                        content = deviceDetailJson,
+                        content = storageBatChartJson,
                         status = HttpStatusCode.OK,
                         headers = headersOf(HttpHeaders.ContentType, "application/json")
                     )
@@ -51,31 +52,50 @@ class DeviceApiTest {
         }
 
         val api = DeviceApiImpl(client, baseUrl = "https://server.growatt.com")
-        val detail = api.getDetail("device1")
+        val chartData = api.getStorageBatChart("123", "abc")
         
-        assertEquals("device1", detail.deviceId)
-        assertEquals("SN123456", detail.deviceSn)
-        assertEquals("inverter", detail.deviceType)
+        assertEquals("2026-02-11", chartData.date)
+        assertEquals(3, chartData.cdsTitle.size)
+        assertEquals("2026-02-05", chartData.cdsTitle[0])
+        assertEquals(5, chartData.socChart.capacity.size)
+        assertEquals(null, chartData.socChart.capacity[0])
+        assertEquals(38.0, chartData.socChart.capacity[1])
+        assertEquals(3, chartData.cdsData.cd_charge.size)
+        assertEquals(0.0, chartData.cdsData.cd_charge[0])
+        assertEquals(0.1, chartData.cdsData.cd_charge[1])
+        assertEquals(3, chartData.cdsData.cd_disCharge.size)
+        assertEquals(0.0, chartData.cdsData.cd_disCharge[0])
     }
 
     @Test
-    fun getRealtime_returnsRealtimeData() = runBlocking {
-        val realtimeJson = """
+    fun getStorageEnergyDayChart_returnsStorageEnergyDayChartData() = runBlocking {
+        val storageEnergyDayChartJson = """
             {
-                "deviceId": "device1",
-                "pac": "2500",
-                "eToday": "15.5",
-                "eTotal": "1234.5",
-                "lastUpdateTime": "2026-02-08 12:00:00",
-                "status": "1"
+                "result": 1,
+                "obj": {
+                    "eChargeTotal": "0.5",
+                    "charts": {
+                        "pacToGrid": [null, 0.0, 10.5, null],
+                        "ppv": [null, 0.0, 67.5, 88.0],
+                        "sysOut": [null, 0.0, 0.0, null],
+                        "userLoad": [null, 0.0, 0.0, null],
+                        "pacToUser": [null, 0.0, 0.0, null]
+                    },
+                    "dtc": 20006,
+                    "eAcDisCharge": "0",
+                    "eDisCharge": "0.2",
+                    "eCharge": "0.5",
+                    "eAcCharge": "0",
+                    "eDisChargeTotal": "0.2"
+                }
             }
         """.trimIndent()
 
         val mockEngine = MockEngine { request ->
             when {
-                request.url.encodedPath.contains("/panel/getDeviceRealtime") -> {
+                request.url.encodedPath.contains("/panel/storage/getStorageEnergyDayChart") -> {
                     respond(
-                        content = realtimeJson,
+                        content = storageEnergyDayChartJson,
                         status = HttpStatusCode.OK,
                         headers = headersOf(HttpHeaders.ContentType, "application/json")
                     )
@@ -91,148 +111,23 @@ class DeviceApiTest {
         }
 
         val api = DeviceApiImpl(client, baseUrl = "https://server.growatt.com")
-        val realtime = api.getRealtime("device1")
+        val energyData = api.getStorageEnergyDayChart("2026-02-11", "123", "abc")
         
-        assertEquals("device1", realtime.deviceId)
-        assertEquals("2500", realtime.pac)
-        assertEquals("15.5", realtime.eToday)
-    }
-
-    @Test
-    fun getHistory_returnsHistoryEntries() = runBlocking {
-        val historyJson = """
-            [
-                {
-                    "date": "2026-02-01",
-                    "energy": "12.5",
-                    "power": "2000"
-                },
-                {
-                    "date": "2026-02-02",
-                    "energy": "13.2",
-                    "power": "2100"
-                }
-            ]
-        """.trimIndent()
-
-        val mockEngine = MockEngine { request ->
-            when {
-                request.url.encodedPath.contains("/panel/getDeviceHistory") -> {
-                    respond(
-                        content = historyJson,
-                        status = HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
-                }
-                else -> respondBadRequest()
-            }
-        }
-
-        val client = HttpClient(mockEngine) {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
-
-        val api = DeviceApiImpl(client, baseUrl = "https://server.growatt.com")
-        val range = DateRange("2026-02-01", "2026-02-08")
-        val history = api.getHistory("device1", range)
+        assertEquals("0.5", energyData.eChargeTotal)
+        assertEquals(20006, energyData.dtc)
+        assertEquals("0", energyData.eAcDisCharge)
+        assertEquals("0.2", energyData.eDisCharge)
+        assertEquals("0.5", energyData.eCharge)
+        assertEquals("0", energyData.eAcCharge)
+        assertEquals("0.2", energyData.eDisChargeTotal)
         
-        assertEquals(2, history.size)
-        assertEquals("2026-02-01", history[0].date)
-        assertEquals("12.5", history[0].energy)
-    }
-
-    @Test
-    fun getStatus_returnsDeviceStatus() = runBlocking {
-        val statusJson = """
-            {
-                "deviceId": "device1",
-                "status": "1",
-                "ptoStatus": "online",
-                "bdcStatus": "ok",
-                "lastUpdateTime": "2026-02-08 12:00:00"
-            }
-        """.trimIndent()
-
-        val mockEngine = MockEngine { request ->
-            when {
-                request.url.encodedPath.contains("/panel/getDeviceStatus") -> {
-                    respond(
-                        content = statusJson,
-                        status = HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
-                }
-                else -> respondBadRequest()
-            }
-        }
-
-        val client = HttpClient(mockEngine) {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
-
-        val api = DeviceApiImpl(client, baseUrl = "https://server.growatt.com")
-        val status = api.getStatus("device1")
+        assertEquals(4, energyData.charts.pacToGrid.size)
+        assertEquals(null, energyData.charts.pacToGrid[0])
+        assertEquals(0.0, energyData.charts.pacToGrid[1])
+        assertEquals(10.5, energyData.charts.pacToGrid[2])
         
-        assertEquals("device1", status.deviceId)
-        assertEquals("1", status.status)
-        assertEquals("online", status.ptoStatus)
-    }
-
-    @Test
-    fun getAlarms_returnsAlarms() = runBlocking {
-        val alarmsJson = """
-            [
-                {
-                    "alarmId": "alarm1",
-                    "deviceId": "device1",
-                    "alarmCode": "E001",
-                    "alarmMessage": "Grid voltage too high",
-                    "alarmType": "warning",
-                    "timestamp": "2026-02-08 10:00:00",
-                    "isResolved": false
-                },
-                {
-                    "alarmId": "alarm2",
-                    "deviceId": "device1",
-                    "alarmCode": "E002",
-                    "alarmMessage": "Temperature high",
-                    "alarmType": "info",
-                    "timestamp": "2026-02-08 09:00:00",
-                    "isResolved": true
-                }
-            ]
-        """.trimIndent()
-
-        val mockEngine = MockEngine { request ->
-            when {
-                request.url.encodedPath.contains("/panel/getDeviceAlarms") -> {
-                    respond(
-                        content = alarmsJson,
-                        status = HttpStatusCode.OK,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json")
-                    )
-                }
-                else -> respondBadRequest()
-            }
-        }
-
-        val client = HttpClient(mockEngine) {
-            install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
-            }
-        }
-
-        val api = DeviceApiImpl(client, baseUrl = "https://server.growatt.com")
-        val alarms = api.getAlarms("device1")
-        
-        assertEquals(2, alarms.size)
-        assertEquals("alarm1", alarms[0].alarmId)
-        assertEquals("E001", alarms[0].alarmCode)
-        assertEquals(false, alarms[0].isResolved)
-        assertEquals(true, alarms[1].isResolved)
+        assertEquals(4, energyData.charts.ppv.size)
+        assertEquals(67.5, energyData.charts.ppv[2])
+        assertEquals(88.0, energyData.charts.ppv[3])
     }
 }

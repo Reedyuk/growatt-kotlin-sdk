@@ -59,7 +59,7 @@ class GrowattApiImpl(
     }
 
     override suspend fun getDevices(plantId: String, pageNumber: Int): GetDevicesForPlantResponse {
-        val response = client.get("$baseUrl/panel/getDevicesByPlantList") {
+        val response = client.post("$baseUrl/panel/getDevicesByPlantList") {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody(
                 FormDataContent(

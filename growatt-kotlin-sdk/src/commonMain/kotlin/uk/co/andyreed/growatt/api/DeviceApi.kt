@@ -2,6 +2,7 @@ package uk.co.andyreed.growatt.api
 
 import io.ktor.client.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
@@ -11,40 +12,21 @@ import kotlinx.serialization.json.Json
  */
 interface DeviceApi {
     /**
-     * Get detailed information about a device
-     * @param deviceId The unique identifier of the device
-     * @return DeviceDetail containing detailed device information
+     * Get storage battery chart data
+     * @param plantId The plant identifier
+     * @param storageSn The storage serial number
+     * @return StorageBatChartData containing battery chart information
      */
-    suspend fun getDetail(deviceId: String): DeviceDetail
+    suspend fun getStorageBatChart(plantId: String, storageSn: String): StorageBatChartData
     
     /**
-     * Get real-time data from a device
-     * @param deviceId The unique identifier of the device
-     * @return RealtimeData containing current device metrics
+     * Get storage energy day chart data
+     * @param date The date for the energy chart (format: yyyy-MM-dd)
+     * @param plantId The plant identifier
+     * @param storageSn The storage serial number
+     * @return StorageEnergyDayChartData containing energy chart information
      */
-    suspend fun getRealtime(deviceId: String): RealtimeData
-    
-    /**
-     * Get historical data for a device
-     * @param deviceId The unique identifier of the device
-     * @param range The date range for the history query
-     * @return List of HistoryEntry records
-     */
-    suspend fun getHistory(deviceId: String, range: DateRange): List<HistoryEntry>
-    
-    /**
-     * Get the current status of a device
-     * @param deviceId The unique identifier of the device
-     * @return DeviceStatus containing status information
-     */
-    suspend fun getStatus(deviceId: String): DeviceStatus
-    
-    /**
-     * Get alarms for a device
-     * @param deviceId The unique identifier of the device
-     * @return List of Alarm records
-     */
-    suspend fun getAlarms(deviceId: String): List<Alarm>
+    suspend fun getStorageEnergyDayChart(date: String, plantId: String, storageSn: String): StorageEnergyDayChartData
 }
 
 /**
@@ -56,51 +38,40 @@ class DeviceApiImpl(
 ) : DeviceApi {
 
     private val json = Json { ignoreUnknownKeys = true }
-
-    override suspend fun getDetail(deviceId: String): DeviceDetail {
-        val response = client.get("$baseUrl/panel/getDeviceDetail") {
-            parameter("deviceSn", deviceId)
+    override suspend fun getStorageBatChart(plantId: String, storageSn: String): StorageBatChartData {
+        val response = client.post("$baseUrl/panel/storage/getStorageBatChart") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(
+                FormDataContent(
+                    Parameters.build {
+                        append("plantId", plantId)
+                        append("storageSn", storageSn)
+                    }
+                )
+            )
             header(HttpHeaders.Accept, "*/*")
         }
         val bodyAsText = response.bodyAsText()
-        return json.decodeFromString<DeviceDetail>(bodyAsText)
+        val chartResponse = json.decodeFromString<StorageBatChartResponse>(bodyAsText)
+        return chartResponse.obj ?: throw ApiException(chartResponse.result, "Failed to get storage battery chart")
     }
 
-    override suspend fun getRealtime(deviceId: String): RealtimeData {
-        val response = client.get("$baseUrl/panel/getDeviceRealtime") {
-            parameter("deviceSn", deviceId)
+    override suspend fun getStorageEnergyDayChart(date: String, plantId: String, storageSn: String): StorageEnergyDayChartData {
+        val response = client.post("$baseUrl/panel/storage/getStorageEnergyDayChart") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(
+                FormDataContent(
+                    Parameters.build {
+                        append("date", date)
+                        append("plantId", plantId)
+                        append("storageSn", storageSn)
+                    }
+                )
+            )
             header(HttpHeaders.Accept, "*/*")
         }
         val bodyAsText = response.bodyAsText()
-        return json.decodeFromString<RealtimeData>(bodyAsText)
-    }
-
-    override suspend fun getHistory(deviceId: String, range: DateRange): List<HistoryEntry> {
-        val response = client.get("$baseUrl/panel/getDeviceHistory") {
-            parameter("deviceSn", deviceId)
-            parameter("startDate", range.startDate)
-            parameter("endDate", range.endDate)
-            header(HttpHeaders.Accept, "*/*")
-        }
-        val bodyAsText = response.bodyAsText()
-        return json.decodeFromString<List<HistoryEntry>>(bodyAsText)
-    }
-
-    override suspend fun getStatus(deviceId: String): DeviceStatus {
-        val response = client.get("$baseUrl/panel/getDeviceStatus") {
-            parameter("deviceSn", deviceId)
-            header(HttpHeaders.Accept, "*/*")
-        }
-        val bodyAsText = response.bodyAsText()
-        return json.decodeFromString<DeviceStatus>(bodyAsText)
-    }
-
-    override suspend fun getAlarms(deviceId: String): List<Alarm> {
-        val response = client.get("$baseUrl/panel/getDeviceAlarms") {
-            parameter("deviceSn", deviceId)
-            header(HttpHeaders.Accept, "*/*")
-        }
-        val bodyAsText = response.bodyAsText()
-        return json.decodeFromString<List<Alarm>>(bodyAsText)
+        val chartResponse = json.decodeFromString<StorageEnergyDayChartResponse>(bodyAsText)
+        return chartResponse.obj ?: throw ApiException(chartResponse.result, "Failed to get storage energy day chart")
     }
 }
