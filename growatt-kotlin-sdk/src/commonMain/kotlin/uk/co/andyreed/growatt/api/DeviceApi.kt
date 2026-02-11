@@ -101,7 +101,7 @@ class DeviceApiImpl(
     }
 
     override suspend fun getStatus(deviceId: String): DeviceStatus {
-        val response = client.get("$baseUrl/panel/getDeviceStatus") {
+        val response = client.post("$baseUrl/panel/getDeviceStatus") {
             parameter("deviceSn", deviceId)
             header(HttpHeaders.Accept, "*/*")
         }
@@ -110,7 +110,7 @@ class DeviceApiImpl(
     }
 
     override suspend fun getAlarms(deviceId: String): List<Alarm> {
-        val response = client.get("$baseUrl/panel/getDeviceAlarms") {
+        val response = client.post("$baseUrl/panel/getDeviceAlarms") {
             parameter("deviceSn", deviceId)
             header(HttpHeaders.Accept, "*/*")
         }
@@ -119,7 +119,7 @@ class DeviceApiImpl(
     }
 
     override suspend fun getBatteryState(deviceId: String): BatteryState {
-        val response = client.get("$baseUrl/panel/getBatteryState") {
+        val response = client.post("$baseUrl/panel/getBatteryState") {
             parameter("deviceSn", deviceId)
             header(HttpHeaders.Accept, "*/*")
         }
@@ -128,7 +128,7 @@ class DeviceApiImpl(
     }
 
     override suspend fun getBatteryMetrics(deviceId: String): BatteryMetrics {
-        val response = client.get("$baseUrl/panel/getBatteryMetrics") {
+        val response = client.post("$baseUrl/panel/getBatteryMetrics") {
             parameter("deviceSn", deviceId)
             header(HttpHeaders.Accept, "*/*")
         }
