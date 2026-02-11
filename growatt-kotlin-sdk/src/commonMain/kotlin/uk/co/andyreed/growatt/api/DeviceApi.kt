@@ -2,6 +2,7 @@ package uk.co.andyreed.growatt.api
 
 import io.ktor.client.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
@@ -59,6 +60,14 @@ interface DeviceApi {
      * @return BatteryMetrics containing battery performance metrics
      */
     suspend fun getBatteryMetrics(deviceId: String): BatteryMetrics
+    
+    /**
+     * Get storage battery chart data
+     * @param plantId The plant identifier
+     * @param storageSn The storage serial number
+     * @return StorageBatChartData containing battery chart information
+     */
+    suspend fun getStorageBatChart(plantId: String, storageSn: String): StorageBatChartData
 }
 
 /**
@@ -134,5 +143,23 @@ class DeviceApiImpl(
         }
         val bodyAsText = response.bodyAsText()
         return json.decodeFromString<BatteryMetrics>(bodyAsText)
+    }
+
+    override suspend fun getStorageBatChart(plantId: String, storageSn: String): StorageBatChartData {
+        val response = client.post("$baseUrl/panel/storage/getStorageBatChart") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(
+                FormDataContent(
+                    Parameters.build {
+                        append("plantId", plantId)
+                        append("storageSn", storageSn)
+                    }
+                )
+            )
+            header(HttpHeaders.Accept, "*/*")
+        }
+        val bodyAsText = response.bodyAsText()
+        val chartResponse = json.decodeFromString<StorageBatChartResponse>(bodyAsText)
+        return chartResponse.obj ?: throw ApiException(chartResponse.result, "Failed to get storage battery chart")
     }
 }

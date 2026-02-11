@@ -331,4 +331,58 @@ class DeviceApiTest {
         assertEquals("250", batteryMetrics.cycleCount)
         assertEquals("95.5", batteryMetrics.health)
     }
+
+    @Test
+    fun getStorageBatChart_returnsStorageBatChartData() = runBlocking {
+        val storageBatChartJson = """
+            {
+                "result": 1,
+                "obj": {
+                    "date": "2026-02-11",
+                    "cdsTitle": ["2026-02-05", "2026-02-06", "2026-02-07"],
+                    "socChart": {
+                        "capacity": [null, 38.0, 39.0, 40.0, null]
+                    },
+                    "cdsData": {
+                        "cd_charge": [0.0, 0.1, 0.2],
+                        "cd_disCharge": [0.0, 0.0, 0.1]
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val mockEngine = MockEngine { request ->
+            when {
+                request.url.encodedPath.contains("/panel/storage/getStorageBatChart") -> {
+                    respond(
+                        content = storageBatChartJson,
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json")
+                    )
+                }
+                else -> respondBadRequest()
+            }
+        }
+
+        val client = HttpClient(mockEngine) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+        }
+
+        val api = DeviceApiImpl(client, baseUrl = "https://server.growatt.com")
+        val chartData = api.getStorageBatChart("123", "abc")
+        
+        assertEquals("2026-02-11", chartData.date)
+        assertEquals(3, chartData.cdsTitle.size)
+        assertEquals("2026-02-05", chartData.cdsTitle[0])
+        assertEquals(5, chartData.socChart.capacity.size)
+        assertEquals(null, chartData.socChart.capacity[0])
+        assertEquals(38.0, chartData.socChart.capacity[1])
+        assertEquals(3, chartData.cdsData.cd_charge.size)
+        assertEquals(0.0, chartData.cdsData.cd_charge[0])
+        assertEquals(0.1, chartData.cdsData.cd_charge[1])
+        assertEquals(3, chartData.cdsData.cd_disCharge.size)
+        assertEquals(0.0, chartData.cdsData.cd_disCharge[0])
+    }
 }

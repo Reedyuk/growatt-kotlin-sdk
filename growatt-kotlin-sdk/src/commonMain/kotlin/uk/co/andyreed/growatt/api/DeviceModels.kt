@@ -101,3 +101,40 @@ data class BatteryMetrics(
     val health: String,           // Battery health (%)
     val lastUpdateTime: String
 )
+
+/**
+ * Response wrapper for storage battery chart data
+ */
+@Serializable
+data class StorageBatChartResponse(
+    val result: Int,
+    val obj: StorageBatChartData? = null
+)
+
+/**
+ * Storage battery chart data
+ */
+@Serializable
+data class StorageBatChartData(
+    val date: String,
+    val cdsTitle: List<String>,
+    val socChart: SocChart,
+    val cdsData: CdsData
+)
+
+/**
+ * State of charge chart data
+ */
+@Serializable
+data class SocChart(
+    val capacity: List<Double?>
+)
+
+/**
+ * Charge/discharge data
+ */
+@Serializable
+data class CdsData(
+    val cd_charge: List<Double>,
+    val cd_disCharge: List<Double>
+)
