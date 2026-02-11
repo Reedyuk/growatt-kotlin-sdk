@@ -138,3 +138,39 @@ data class CdsData(
     val cd_charge: List<Double>,
     val cd_disCharge: List<Double>
 )
+
+/**
+ * Response wrapper for storage energy day chart data
+ */
+@Serializable
+data class StorageEnergyDayChartResponse(
+    val result: Int,
+    val obj: StorageEnergyDayChartData? = null
+)
+
+/**
+ * Storage energy day chart data
+ */
+@Serializable
+data class StorageEnergyDayChartData(
+    val eChargeTotal: String,
+    val charts: EnergyCharts,
+    val dtc: Int,
+    val eAcDisCharge: String,
+    val eDisCharge: String,
+    val eCharge: String,
+    val eAcCharge: String,
+    val eDisChargeTotal: String
+)
+
+/**
+ * Energy charts containing various power and load data
+ */
+@Serializable
+data class EnergyCharts(
+    val pacToGrid: List<Double?>,
+    val ppv: List<Double?>,
+    val sysOut: List<Double?>,
+    val userLoad: List<Double?>,
+    val pacToUser: List<Double?>
+)

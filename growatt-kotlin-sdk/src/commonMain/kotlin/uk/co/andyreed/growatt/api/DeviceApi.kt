@@ -18,6 +18,15 @@ interface DeviceApi {
      * @return StorageBatChartData containing battery chart information
      */
     suspend fun getStorageBatChart(plantId: String, storageSn: String): StorageBatChartData
+    
+    /**
+     * Get storage energy day chart data
+     * @param date The date for the energy chart (format: yyyy-MM-dd)
+     * @param plantId The plant identifier
+     * @param storageSn The storage serial number
+     * @return StorageEnergyDayChartData containing energy chart information
+     */
+    suspend fun getStorageEnergyDayChart(date: String, plantId: String, storageSn: String): StorageEnergyDayChartData
 }
 
 /**
@@ -45,5 +54,24 @@ class DeviceApiImpl(
         val bodyAsText = response.bodyAsText()
         val chartResponse = json.decodeFromString<StorageBatChartResponse>(bodyAsText)
         return chartResponse.obj ?: throw ApiException(chartResponse.result, "Failed to get storage battery chart")
+    }
+
+    override suspend fun getStorageEnergyDayChart(date: String, plantId: String, storageSn: String): StorageEnergyDayChartData {
+        val response = client.post("$baseUrl/panel/storage/getStorageEnergyDayChart") {
+            contentType(ContentType.Application.FormUrlEncoded)
+            setBody(
+                FormDataContent(
+                    Parameters.build {
+                        append("date", date)
+                        append("plantId", plantId)
+                        append("storageSn", storageSn)
+                    }
+                )
+            )
+            header(HttpHeaders.Accept, "*/*")
+        }
+        val bodyAsText = response.bodyAsText()
+        val chartResponse = json.decodeFromString<StorageEnergyDayChartResponse>(bodyAsText)
+        return chartResponse.obj ?: throw ApiException(chartResponse.result, "Failed to get storage energy day chart")
     }
 }
