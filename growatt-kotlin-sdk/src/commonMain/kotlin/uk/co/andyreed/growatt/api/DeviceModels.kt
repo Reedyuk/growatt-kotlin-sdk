@@ -174,3 +174,57 @@ data class EnergyCharts(
     val userLoad: List<Double?>,
     val pacToUser: List<Double?>
 )
+
+/**
+ * Real-time snapshot of all system data (battery, solar, grid)
+ */
+@Serializable
+data class RealtimeSnapshot(
+    val timestamp: String,
+    val solar: SolarData,
+    val battery: BatteryData,
+    val grid: GridData,
+    val consumption: ConsumptionData
+)
+
+/**
+ * Real-time solar data
+ */
+@Serializable
+data class SolarData(
+    val currentPower: Double?,      // Current solar power generation (W)
+    val energyToday: String,        // Energy generated today (kWh)
+    val energyTotal: String         // Total energy generated (kWh)
+)
+
+/**
+ * Real-time battery data
+ */
+@Serializable
+data class BatteryData(
+    val stateOfCharge: Double?,     // Battery level (%)
+    val power: Double?,             // Current battery power (W) - positive = charging, negative = discharging
+    val status: String,             // charging/discharging/idle
+    val chargedToday: String,       // Energy charged today (kWh)
+    val dischargedToday: String     // Energy discharged today (kWh)
+)
+
+/**
+ * Real-time grid data
+ */
+@Serializable
+data class GridData(
+    val powerToGrid: Double?,       // Power being exported to grid (W)
+    val powerFromGrid: Double?,     // Power being imported from grid (W)
+    val netPower: Double?           // Net power (positive = exporting, negative = importing)
+)
+
+/**
+ * Real-time consumption data
+ */
+@Serializable
+data class ConsumptionData(
+    val currentLoad: Double?,       // Current power consumption (W)
+    val powerFromSolar: Double?,    // Power from solar to load (W)
+    val powerFromBattery: Double?   // Power from battery to load (W)
+)
